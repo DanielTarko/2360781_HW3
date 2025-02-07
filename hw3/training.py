@@ -94,7 +94,30 @@ class Trainer(abc.ABC):
             #    simple regularization technique that is highly recommended.
             # ====== YOUR CODE: ======
             
-            raise NotImplementedError()
+            
+            # Train for one epoch
+            train_result = self.train_epoch(dl_train, verbose=verbose, **kw)
+            train_loss.append(sum(train_result.losses) / len(train_result.losses))  # Average loss
+            train_acc.append(train_result.accuracy)
+
+            # Evaluate on the test set
+            test_result = self.test_epoch(dl_test, verbose=verbose, **kw)
+            test_loss.append(sum(test_result.losses) / len(test_result.losses))  # Average loss
+            test_acc.append(test_result.accuracy)
+
+            # Check if accuracy improved
+            if best_acc is None or test_result.accuracy > best_acc:
+                best_acc = test_result.accuracy
+                epochs_without_improvement = 0
+                save_checkpoint = True
+            else:
+                epochs_without_improvement += 1
+
+            # Early stopping check
+            if early_stopping is not None and epochs_without_improvement >= early_stopping:
+                self._print(f"Stopping early after {epoch + 1} epochs due to no improvement.", verbose)
+                break
+
 
             # ========================
 
@@ -219,6 +242,7 @@ class Trainer(abc.ABC):
 class RNNTrainer(Trainer):
     def __init__(self, model, loss_fn, optimizer, device=None):
         super().__init__(model, loss_fn, optimizer, device)
+        self.hidden_state = None
 
     def train_epoch(self, dl_train: DataLoader, **kw):
         # TODO: Implement modifications to the base method, if needed.
@@ -250,7 +274,31 @@ class RNNTrainer(Trainer):
         #  - Update params
         #  - Calculate number of correct char predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+
+        # Forward pass
+        y_pred, self.hidden_state = self.model(x, self.hidden_state)
+        
+        # Reshape predictions and targets for loss calculation
+        # Predictions: (B,S,V) -> (B*S,V)
+        # Targets: (B,S) -> (B*S)
+        y_pred = y_pred.reshape(-1, y_pred.shape[-1])
+        y = y.reshape(-1)
+        
+        # Calculate loss
+        loss = self.loss_fn(y_pred, y)
+        
+        # Backward pass and optimization
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        
+        # Calculate number of correct predictions
+        predicted_chars = torch.argmax(y_pred, dim=1)
+        num_correct = torch.sum(predicted_chars == y)
+        
+        # Detach hidden state from graph but keep values for next batch
+        self.hidden_state = self.hidden_state.detach()
+        
         # ========================
 
         # Note: scaling num_correct by seq_len because each sample has seq_len
@@ -270,8 +318,19 @@ class RNNTrainer(Trainer):
             #  - Loss calculation
             #  - Calculate number of correct predictions
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
-            # ========================
+            # Forward pass
+            y_pred, self.hidden_state = self.model(x, self.hidden_state)
+            
+            # Reshape predictions and targets for loss calculation
+            y_pred = y_pred.reshape(-1, y_pred.shape[-1])
+            y = y.reshape(-1)
+            
+            # Calculate loss
+            loss = self.loss_fn(y_pred, y)
+            
+            # Calculate number of correct predictions
+            predicted_chars = torch.argmax(y_pred, dim=1)
+            num_correct = torch.sum(predicted_chars == y)            # ========================
 
         return BatchResult(loss.item(), num_correct.item() / seq_len)
 
@@ -307,17 +366,28 @@ class TransformerEncoderTrainer(Trainer):
         input_ids = batch['input_ids'].to(self.device)
         attention_mask = batch['attention_mask'].float().to(self.device)
         label = batch['label'].float().to(self.device)
-        
         loss = None
         num_correct = None
         # TODO:
         #  fill out the training loop.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # Zero the gradients
+        self.optimizer.zero_grad()
+        
+        # Forward pass
+        outputs = self.model(input_ids, attention_mask).squeeze(-1)
+        
+        # Compute loss (binary cross-entropy for binary classification)
+        loss = self.loss_fn(outputs, label)
+        
+        # Backward pass and optimization
+        loss.backward()
+        self.optimizer.step()
+        
+        # Compute number of correct predictions
+        predictions = torch.round(torch.sigmoid(outputs))
+        num_correct = (predictions == label).float().sum()
         # ========================
-        
-        
-        
+
         return BatchResult(loss.item(), num_correct.item())
         
     def test_batch(self, batch) -> BatchResult:
@@ -325,14 +395,21 @@ class TransformerEncoderTrainer(Trainer):
             input_ids = batch['input_ids'].to(self.device)
             attention_mask = batch['attention_mask'].float().to(self.device)
             label = batch['label'].float().to(self.device)
-            
             loss = None
             num_correct = None
             
             # TODO:
             #  fill out the testing loop.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            # Forward pass
+            outputs = self.model(input_ids, attention_mask).squeeze(-1)
+            
+            # Compute loss
+            loss = self.loss_fn(outputs, label)
+            
+            # Compute number of correct predictions
+            predictions = torch.round(torch.sigmoid(outputs))
+            num_correct = (predictions == label).float().sum()
             # ========================
 
             
@@ -353,7 +430,6 @@ class FineTuningTrainer(Trainer):
         # ====== YOUR CODE: ======
 
         raise NotImplementedError()
-        
         # ========================
         
         return BatchResult(loss, num_correct)
