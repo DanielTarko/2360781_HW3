@@ -19,7 +19,7 @@ class EncoderCNN(nn.Module):
         #  use pooling or only strides, use any activation functions,
         #  use BN or Dropout, etc.
         # ====== YOUR CODE: ======
-        print("encoder")
+        
         channels = [in_channels, 32, 64, 128, out_channels]
         kernel_sizes = [5] + [3] * (len(channels) - 2)
         for i in range(len(channels)-1):
@@ -50,7 +50,6 @@ class DecoderCNN(nn.Module):
         #  output should be a batch of images, with same dimensions as the
         #  inputs to the Encoder were.
         # ====== YOUR CODE: ======
-        print("decoder")
         channels = [in_channels, 128, 64, 32]
         kernel_sizes = [3] * (len(channels) - 1) + [5]
         for i in range(len(channels)-1):
@@ -92,7 +91,7 @@ class VAE(nn.Module):
         # TODO: Add more layers as needed for encode() and decode().
         # ====== YOUR CODE: ======
         # Ensure all layers are on the same device
-        print("vae")
+        
         device = next(self.parameters()).device
 
         # Layers for computing the latent space parameters
@@ -122,7 +121,7 @@ class VAE(nn.Module):
         #     log_sigma2 (mean and log variance) of q(Z|x).
         #  2. Apply the reparametrization trick to obtain z.
         # ====== YOUR CODE: ======
-        print("encode")
+        
         device = next(self.parameters()).device
         features = self.features_encoder(x.to(device)).view(x.shape[0], -1)
         mu = self.mean_layer(features)
@@ -141,7 +140,7 @@ class VAE(nn.Module):
         #  1. Convert latent z to features h with a linear layer.
         #  2. Apply features decoder.
         # ====== YOUR CODE: ======
-        print("decode")
+        
         device = next(self.parameters()).device
         features = self.latent_to_features(z.to(device)).view(-1, *self.features_shape)
         x_rec = self.features_decoder(features)
@@ -163,7 +162,6 @@ class VAE(nn.Module):
             #    Instead of sampling from N(psi(z), sigma2 I), we'll just take
             #    the mean, i.e. psi(z).
             # ====== YOUR CODE: ======
-            print("sample")
             latent_sampels = torch.randn(n, self.z_dim).to(device)
             samples = self.decode(latent_sampels).to(device)
             # ========================
@@ -199,7 +197,7 @@ def vae_loss(x, xr, z_mu, z_log_sigma2, x_sigma2):
     #  2. You need to average over the batch dimension.
     # ====== YOUR CODE: ======
     # Compute dimensions
-    print("vae loss")
+    
     num_pixels = x.numel()  
     batch_size = x.shape[0]  
     latent_dim = z_mu.shape[1]  
