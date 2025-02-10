@@ -82,7 +82,8 @@ part1_q4 = r"""
 # ==============
 # Part 2 answers
 
-PART2_CUSTOM_DATA_URL = None
+PART2_CUSTOM_DATA_URL =  "https://github.com/AviaAvraham1/TempDatasets/raw/refs/heads/main/George_W_Bush2.zip"
+
 
 
 def part2_vae_hyperparams():
