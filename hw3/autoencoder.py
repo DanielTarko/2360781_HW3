@@ -25,7 +25,7 @@ class EncoderCNN(nn.Module):
         for i in range(len(channels)-1):
             in_channel = channels[i]
             out_channel = channels[i+1]
-            modules.append(nn.Conv2d(in_channel, out_channel, kernel_size=kernel_sizes[i],bias=False))
+            modules.append(nn.Conv2d(in_channel, out_channel, kernel_size=kernel_sizes[i],stride = 2,bias=False))
             modules.append(nn.BatchNorm2d(out_channel))
             modules.append(nn.ReLU())
         # ========================
@@ -50,19 +50,16 @@ class DecoderCNN(nn.Module):
         #  output should be a batch of images, with same dimensions as the
         #  inputs to the Encoder were.
         # ====== YOUR CODE: ======
-        channels = [in_channels, 128, 64, 32]
-        kernel_sizes = [3] * (len(channels) - 1) + [5]
+        channels = [in_channels, 128, 64, 32, out_channels]
+        kernel_sizes = [3] * (len(channels) - 2) + [5]
+
         for i in range(len(channels)-1):
             in_channel = channels[i]
             out_channel = channels[i+1]
-            modules.append(nn.ConvTranspose2d(in_channel, out_channel, kernel_size=kernel_sizes[i], bias=False))
-            modules.append(nn.BatchNorm2d(out_channel))
-            modules.append(nn.ReLU())
-
-        in_channel = channels[-1]
-        out_channel = out_channels
-        modules.append(nn.ConvTranspose2d(in_channel, out_channel, kernel_size=kernel_sizes[-1], bias=False))
-       
+            modules.append(nn.ConvTranspose2d(in_channel, out_channel, kernel_size=kernel_sizes[i], stride=2, output_padding=1, bias=False))
+            if i < len(channels) - 2:  # Apply BN and ReLU to all except the last layer
+                modules.append(nn.BatchNorm2d(out_channel))
+                modules.append(nn.ReLU())
         # ========================
         self.cnn = nn.Sequential(*modules)
 
