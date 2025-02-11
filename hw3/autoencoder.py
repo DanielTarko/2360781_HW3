@@ -198,7 +198,7 @@ def vae_loss(x, xr, z_mu, z_log_sigma2, x_sigma2):
     # ====== YOUR CODE: ======
     # Compute dimensions
     
-    num_pixels = torch.numel(torch.FloatTensor(x.shape))
+    num_pixels = x.numel()
     batch_size = x.shape[0]  
     latent_dim = z_mu.shape[1]  
 
