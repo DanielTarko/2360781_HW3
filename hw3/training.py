@@ -346,7 +346,6 @@ class VAETrainer(Trainer):
         loss, data_loss, _ = self.loss_fn(x, dec_z, mu, sigma_2)
         loss.backward()
         self.optimizer.step()
-        print("loss:",loss , "data_loss:", data_loss)
         # ========================
 
         return BatchResult(loss.item(), 1 / data_loss.item())
@@ -360,7 +359,6 @@ class VAETrainer(Trainer):
             # ====== YOUR CODE: ======
             dec_z, mu, sigma_2 = self.model(x)
             loss, data_loss, _ = self.loss_fn(x, dec_z, mu, sigma_2) 
-            print("loss:",loss , "data_loss:", data_loss)
             # ========================
 
         return BatchResult(loss.item(), 1 / data_loss.item())

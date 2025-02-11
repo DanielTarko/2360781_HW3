@@ -25,7 +25,7 @@ class EncoderCNN(nn.Module):
         for i in range(len(channels)-1):
             in_channel = channels[i]
             out_channel = channels[i+1]
-            modules.append(nn.Conv2d(in_channel, out_channel, kernel_size=kernel_sizes[i],stride = 2,bias=False))
+            modules.append(nn.Conv2d(in_channel, out_channel, kernel_size=kernel_sizes[i],stride = 2,padding=(kernel_sizes[i] - 1) // 2,bias=False))
             modules.append(nn.BatchNorm2d(out_channel))
             modules.append(nn.ReLU())
         # ========================
@@ -56,7 +56,7 @@ class DecoderCNN(nn.Module):
         for i in range(len(channels)-1):
             in_channel = channels[i]
             out_channel = channels[i+1]
-            modules.append(nn.ConvTranspose2d(in_channel, out_channel, kernel_size=kernel_sizes[i], stride=2, output_padding=1, bias=False))
+            modules.append(nn.ConvTranspose2d(in_channel, out_channel, kernel_size=kernel_sizes[i], stride=2,padding=(kernel_sizes[i] - 1) // 2, output_padding=1, bias=False))
             if i < len(channels) - 2:  # Apply BN and ReLU to all except the last layer
                 modules.append(nn.BatchNorm2d(out_channel))
                 modules.append(nn.ReLU())
