@@ -20,14 +20,20 @@ class EncoderCNN(nn.Module):
         #  use BN or Dropout, etc.
         # ====== YOUR CODE: ======
         
-        channels = [in_channels, 32, 64, 128, out_channels]
+        
+        channels = [in_channels, 64, 128, 256, 512, out_channels]
         kernel_sizes = [5] + [3] * (len(channels) - 2)
+
         for i in range(len(channels)-1):
             in_channel = channels[i]
             out_channel = channels[i+1]
-            modules.append(nn.Conv2d(in_channel, out_channel, kernel_size=kernel_sizes[i],stride = 2,padding=(kernel_sizes[i] - 1) // 2,bias=False))
+            pad = (kernel_sizes[i] - 1) // 2
+            modules.append(nn.Conv2d(in_channel, out_channel, kernel_size=kernel_sizes[i], stride=1, padding=pad, bias=False))
             modules.append(nn.BatchNorm2d(out_channel))
             modules.append(nn.ReLU())
+            if i < len(channels) - 2:  
+                modules.append(nn.MaxPool2d(kernel_size=2, stride=2))  # Downsample
+                modules.append(nn.Dropout(0.3))  # Regularization
         # ========================
         self.cnn = nn.Sequential(*modules)
 
@@ -50,16 +56,20 @@ class DecoderCNN(nn.Module):
         #  output should be a batch of images, with same dimensions as the
         #  inputs to the Encoder were.
         # ====== YOUR CODE: ======
-        channels = [in_channels, 128, 64, 32, out_channels]
+        channels = [in_channels, 512, 256, 128, 64, out_channels]
         kernel_sizes = [3] * (len(channels) - 2) + [5]
 
         for i in range(len(channels)-1):
             in_channel = channels[i]
             out_channel = channels[i+1]
-            modules.append(nn.ConvTranspose2d(in_channel, out_channel, kernel_size=kernel_sizes[i], stride=2,padding=(kernel_sizes[i] - 1) // 2, output_padding=1, bias=False))
-            if i < len(channels) - 2:  # Apply BN and ReLU to all except the last layer
+            pad = (kernel_sizes[i] - 1) // 2
+            modules.append(nn.ConvTranspose2d(in_channel, out_channel, kernel_size=kernel_sizes[i], stride=1, padding=pad, bias=False))
+            if i < len(channels) - 2:  
                 modules.append(nn.BatchNorm2d(out_channel))
                 modules.append(nn.ReLU())
+                modules.append(nn.ConvTranspose2d(out_channel, out_channel, kernel_size=3, stride=2, padding=1, output_padding=1, bias=False))  # Upsample
+                modules.append(nn.Dropout(0.3))  # Regularization
+        
         # ========================
         self.cnn = nn.Sequential(*modules)
 
