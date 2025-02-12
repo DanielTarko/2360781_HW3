@@ -206,7 +206,16 @@ Constant Discriminator Loss with Decreasing Generator Loss May Suggest:
 part3_q3 = r"""
 **Your answer:**
 
+The VAE is more blurry and smooth whereas the GAN is more blotchy and sharp and detailed. This difference in output quality is due to the inherent nature of the two models and how they generate samples: 
 
+
+VAEs learn a probability distribution of the data, meaning they capture a range of possible values for each pixel. When generating an image, they sample from this distribution, which can lead to averaging out details and creating a smoother, less defined look.   
+
+VAEs are trained to reconstruct input images. This focus on overall similarity can sometimes sacrifice fine-grained details in favor of a more general representation.   
+
+ANs use two networks – a generator and a discriminator – that compete against each other.
+
+The generator tries to create realistic images, while the discriminator tries to distinguish between real and generated images. This adversarial process pushes the generator to produce sharper, more detailed outputs to "fool" the discriminator. ANs are explicitly trained to generate images that are indistinguishable from real ones. This emphasis on realism often results in outputs with more defined edges, textures, and finer details.
 
 """
 
