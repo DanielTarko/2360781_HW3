@@ -104,25 +104,37 @@ def part2_vae_hyperparams():
 
 part2_q1 = r"""
 **Your answer:**
+The hyperparameter x_sigma2 in a VAE controls the variance of the likelihood distribution P(X|Z), balancing reconstruction accuracy and regularization:
+
+- Low x_sigma2 increases emphasis on reconstruction loss, producing accurate but less diverse outputs. The latent space becomes more compact, leading to faithful but potentially overfitted reconstructions.
+- High x_sigma2 increases emphasis on KL divergence, promoting a more spread-out latent space and generating more diverse samples. However, excessive values can lead to unrealistic or incoherent outputs.
 
 
 """
 
 part2_q2 = r"""
 **Your answer:**
+1. The VAE loss consists of two key components: **reconstruction loss** and **KL divergence loss**. The reconstruction loss ensures that decoded samples resemble the original inputs by measuring the difference between the input and its reconstruction , typically using MSE or BCE. This term ensures the model learns meaningful representations of the data. The KL divergence loss regularizes the latent space by enforcing it to follow a standard normal distribution $( \mathcal{N}(0, I) )$. This prevents overfitting and ensures that the latent space is continuous, enabling smooth interpolation and meaningful sampling from the distribution.  
 
+2. The KL divergence loss pushes the learned latent distribution $( q(z|x) )$ to be close to the prior distribution $( p(z) )$. Without KL loss, the encoder could map different inputs to highly separated regions in latent space, leading to a disjoint and non-generalizable representation. By enforcing similarity to a known prior, the latent space becomes compact and smoothly structured, ensuring that similar inputs encode to nearby latent vectors.  
+
+3. Regularizing the latent space with KL divergence provides several advantages. First, it ensures that sampling from the prior produces meaningful and diverse outputs, enabling smooth transitions between generated data points. Second, it improves generalization, making the VAE more robust to unseen inputs. Lastly, it prevents overfitting, ensuring the model captures the true underlying structure of the data rather than memorizing specific training examples.
 
 """
 
 part2_q3 = r"""
 **Your answer:**
-
+We start by maximizing the evidence distribution $p(X)$ because it represents the probability of observing the data under our generative model. Directly maximizing 
+$p(X)$ is difficult to deal with, so we instead derive the ELBO , which provides a simpler objective by introducing a variational approximation 
+$q(z|X)$ to the true distribution. This leads to the VAE loss, which balances reconstruction accuracy and latent space regularization through KL divergence.
 
 
 """
 
 part2_q4 = r"""
 **Your answer:**
+In the VAE encoder, we model the log of the latent-space variance, $ \log \sigma^2_{\alpha} $, instead of directly modeling $ \sigma^2_{\alpha} $ to ensure numerical stability and prevent the variance from becoming negative.
+This also allows for an unconstrained optimization process, as the log-transformed values can take any real number, making training more stable and efficient.
 
 """
 
@@ -257,22 +269,48 @@ In dilated sliding-window attention, the window is applied with gaps (dilations)
 
 """
 
-
-part4_q3= r"""
+part5_q1= r"""
 **Your answer:**
 
+The results clearly show that the fine-tuned BERT model outperforms the model trained from scratch.
+The model trained from scratch achieved an accuracy of 67.4%, while the fine-tuned BERT model reached 77.5% accuracy using the first method, and 85.9% using the second method. Fine-tuning the entire BERT model, rather than just adjusting the linear layers, likely leads to better performance because it allows the model to adapt its internal representations to the specific task, rather than simply modifying the final output layer to fit pre-trained features.
+
+Additionally, using a pre-trained model like BERT, which has been trained on a large and diverse dataset, provides it with a better understanding of complex language patterns, giving it an edge over models trained from scratch. 
+This is a general trend and is not limited to this specific task.
+Pre-trained models typically perform better on downstream tasks because they already capture valuable knowledge of language structures, enabling them to converge faster and perform well even with limited task-specific data.
+
+However, this advantage is most significant when the downstream task aligns well with the data the model was pre-trained on. 
+In specialized or niche tasks, a model trained from scratch might outperform a pre-trained model if it is more tailored to that specific task.
+"""
+
+part5_q2 = r"""
+**Your answer:**
+Freezing internal attention blocks instead of the last linear layers would likely worsen fine-tuning because it prevents the model from adapting its learned representations to the new task.
+The attention layers capture high-level contextual features, and freezing them limits the model's ability to refine task-specific information. Fine-tuning is most effective when the later layers remain trainable, as they specialize in the new task while retaining general knowledge.
 
 """
 
-part4_q4 = r"""
+part5_q3= r"""
 **Your answer:**
-
+BERT alone is not suitable for machine translation because it is an encoder-only model, lacking the autoregressive decoding required for generating translations.
+To adapt BERT for translation, you would need to add an autoregressive decoder with causal self-attention and cross-attention layers to generate the target sequence based on the encoded source sentence.
+Additionally, BERT's pre-training, which uses masked language modeling, doesn't align with the needs of translation, so pre-training the entire encoder-decoder model with a sequence-to-sequence objective would be necessary to make the model effective for this task.
 
 """
 
-part4_q5 = r"""
+part5_q4 = r"""
 **Your answer:**
+One main reason to choose an RNN over a Transformer is that RNNs inherently process data sequentially, maintaining a hidden state that naturally captures temporal dependencies without needing explicit positional encodings.
+This makes RNNs particularly effective in tasks where the order of inputs is crucial and where training data might be limited, as they can often generalize better in low-resource settings compared to Transformers, which typically require large amounts of data to fully leverage their parallel self-attention mechanisms.
 
+"""
+
+part5_q5 = r"""
+**Your answer:**
+Next Sentence Prediction (NSP) is a pre-training task in BERT where the model is given pairs of sentences and must predict if the second sentence is the true following sentence or a randomly chosen one.
+The prediction is based on the output of the token and uses binary cross-entropy loss to measure accuracy.
+Although NSP was intended to help BERT learn inter-sentence relationships, later research has shown that removing NSP does not harm performance and may even improve it.
+This indicates that NSP is not a crucial part of pre-training because the task is relatively easy for the model to learn, and its loss quickly becomes very low, so it does not significantly encourage the learning of deeper inter-sentence relationships.
 
 """
 
